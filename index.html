@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101010">
+<title>Zafar Baloch — Video</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#090909;color:#fff;font-family:Arial,sans-serif}
+header{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#111;position:sticky;top:0;z-index:5;border-bottom:1px solid #292929}
+.logo{font-weight:900;font-size:20px}.logo span{color:#ff3155}.upload{background:#ff3155;color:white;border:0;padding:10px 14px;border-radius:8px;font-weight:bold}
+.tabs{display:flex;justify-content:center;gap:24px;padding:13px;background:#111;color:#aaa;position:sticky;top:58px;z-index:4}.tabs b{color:#fff;border-bottom:2px solid #ff3155;padding-bottom:8px}
+main{max-width:560px;margin:auto;padding:12px 10px 80px}.hint{color:#aaa;font-size:13px;text-align:center;margin:10px 0 16px}
+.card{background:#151515;border:1px solid #292929;border-radius:14px;overflow:hidden;margin-bottom:18px}
+.player{width:100%;aspect-ratio:9/14;background:#222;display:block;object-fit:contain}.meta{padding:12px}.user{font-weight:bold;margin-bottom:7px}.caption{font-size:14px;color:#ddd;line-height:1.5}
+.actions{display:flex;gap:18px;margin-top:12px}.actions button{background:none;color:#fff;border:0;font-size:15px;padding:5px 0}
+.commentbox{display:flex;gap:7px;margin-top:10px}.commentbox input{min-width:0;flex:1;background:#252525;color:white;border:1px solid #444;border-radius:8px;padding:9px}.commentbox button{background:#333;color:white;border:0;border-radius:8px;padding:8px 12px}
+#uploadPanel{display:none;background:#171717;border:1px solid #444;padding:14px;border-radius:12px;margin-bottom:16px}
+#uploadPanel input,#uploadPanel textarea{width:100%;margin:7px 0;background:#252525;color:#fff;border:1px solid #444;padding:10px;border-radius:8px}
+#uploadPanel textarea{min-height:65px} .primary{background:#ff3155;color:#fff;border:0;border-radius:8px;padding:11px 14px;font-weight:bold}
+nav{position:fixed;bottom:0;left:0;right:0;background:#111;border-top:1px solid #333;display:flex;justify-content:space-around;padding:12px;z-index:8}
+nav button{background:none;border:0;color:#ddd;font-size:13px}
+.empty{text-align:center;color:#aaa;padding:25px 10px}.small{font-size:12px;color:#999;line-height:1.5}
+</style>
+</head>
+<body>
+<header><div class="logo">ZAFAR <span>BALOCH</span></div><button class="upload" onclick="toggleUpload()">＋ Upload</button></header>
+<div class="tabs"><b>For You</b><span>Following</span><span>Popular</span></div>
+<main>
+<p class="hint">Zafar Baloch — اپنی ویڈیوز دیکھیں اور شیئر کریں</p>
+<section id="uploadPanel">
+<strong>اپنی ویڈیو اپلوڈ کریں</strong>
+<input id="videoFile" type="file" accept="video/*">
+<textarea id="caption" placeholder="ویڈیو کے بارے میں لکھیں..."></textarea>
+<button class="primary" onclick="addVideo()">ویڈیو پوسٹ کریں</button>
+<p class="small">یہ ابتدائی ورژن ویڈیو اسی موبائل/براؤزر میں دکھاتا ہے۔ مستقل اور سب صارفین کے لیے اپلوڈ کے لیے سرور درکار ہوگا۔</p>
+</section>
+<section id="feed"></section>
+<div class="empty" id="empty">ابھی کوئی ویڈیو نہیں۔ اوپر Upload دبائیں اور اپنی پہلی ویڈیو شامل کریں۔</div>
+</main>
+<nav><button onclick="window.scrollTo({top:0,behavior:'smooth'})">⌂ Home</button><button onclick="toggleUpload()">＋ Upload</button><button onclick="showProfile()">◎ Profile</button></nav>
+<script>
+const feed=document.getElementById('feed');
+let posts=[];
+function toggleUpload(){const p=document.getElementById('uploadPanel');p.style.display=p.style.display==='block'?'none':'block'}
+function render(){
+ feed.innerHTML='';document.getElementById('empty').style.display=posts.length?'none':'block';
+ posts.slice().reverse().forEach((p,i)=>{
+  const actual=posts.length-1-i, card=document.createElement('article');card.className='card';
+  const video=document.createElement('video');video.className='player';video.src=p.url;video.controls=true;video.playsInline=true;video.preload='metadata';
+  const meta=document.createElement('div');meta.className='meta';
+  const user=document.createElement('div');user.className='user';user.textContent='@zafarbaloch';
+  const cap=document.createElement('div');cap.className='caption';cap.textContent=p.caption||'New video';
+  const actions=document.createElement('div');actions.className='actions';
+  const like=document.createElement('button');like.textContent='♥ '+p.likes+' Like';like.onclick=()=>{p.likes++;render()};
+  const share=document.createElement('button');share.textContent='↗ Share';share.onclick=async()=>{try{if(navigator.share)await navigator.share({title:'Zafar Baloch',text:p.caption||'Watch this video'});else alert('اس ویڈیو کا لنک شیئر کرنے کے لیے اسے آن لائن پبلش کرنا ہوگا۔')}catch(e){}};
+  actions.append(like,share);
+  const comments=document.createElement('div');comments.className='commentbox';
+  const input=document.createElement('input');input.placeholder='تبصرہ لکھیں...';
+  const send=document.createElement('button');send.textContent='Send';send.onclick=()=>{if(input.value.trim()){const c=document.createElement('p');c.className='small';c.textContent='💬 '+input.value;meta.insertBefore(c,comments);input.value=''}};
+  comments.append(input,send);meta.append(user,cap,actions,comments);card.append(video,meta);feed.append(card);
+ });
+}
+function addVideo(){
+ const file=document.getElementById('videoFile').files[0],caption=document.getElementById('caption').value.trim();
+ if(!file){alert('پہلے ویڈیو منتخب کریں۔');return}
+ const url=URL.createObjectURL(file);posts.push({url,caption,likes:0});render();
+ document.getElementById('videoFile').value='';document.getElementById('caption').value='';toggleUpload();
+}
+function showProfile(){alert('Profile: Zafar Baloch\\nیہ ابتدائی ڈیمو ہے۔ مکمل پروفائل اور لاگ اِن کے لیے بیک اینڈ شامل کرنا ہوگا۔')}
+render();
+</script>
+</body>
+</html>
